@@ -1,6 +1,3 @@
-
-
-
 $(document).ready(function(){
   $('#suggestion').hide();
   $('.progress').hide();
@@ -20,14 +17,12 @@ $(document).ready(function(){
     consumerSecret: auth.consumerSecret,
     tokenSecret: auth.accessTokenSecret
   };
-
-function randomPick(){
-  var radius = $('#milesAway').val() * 1609.34; //converts miles to meters for yelp
-
-  var zip = $('#zipCode').val();
-
-  if(radius == 0){ radius = 2.5 * 1609.34 } //sets radius if left blank
   
+function getResults(){
+  var radius = $('#milesAway').val() * 1609.34; //converts miles to meters for yelp
+  var zip = $('#zipCode').val();
+  if(radius == 0){ radius = 2.5 * 1609.34 } //sets radius if left blank
+  if(zip == 0){ zip = 77656; radius = 40000; }; //if zip is left blank, will search random
   //parameters for yelp API jsonp call
   parameters = [];
   parameters.push(['term', 'food']);
@@ -62,35 +57,57 @@ function randomPick(){
     'jsonpCallback': 'cb',
     'success': function(data, textStats, XMLHttpRequest) {
       console.log(data);
-      var choice = data.businesses[Math.floor((Math.random()*20))]; //random select choice
-      console.log(choice);
-      
-      //check if there is an image available
-      if(typeof(choice.image_url)=="string"){
-        var image = choice.image_url.replace("ms.jpg", "l.jpg"); //changes yelp img to large
-        }
-      else{
-        var image = "images/no-image.jpg";
-        }
+      window.choices = data.businesses;
 
-      $('.name').html(choice.name);
-      $('#pic').attr('src', image);
-      $('#rating').attr('src', choice.rating_img_url_large);
-      $('#votes').html(choice.review_count)
-      $('#street').html(choice.location.display_address[0]);
-      $('#city').html(choice.location.display_address[1]);
-      $('#phone').html(choice.display_phone);
-
+      randomPick();
   }
 });
 };
 
+  function randomPick(){
+      //window.lastChoice; //need way of to not show same listing twice in a row
+      
+      
+     
+      var random = choices[Math.floor((Math.random()*20))]; //random select choice
+      
+
+      //check if there is an image available
+      if(typeof(random.image_url)=="string"){
+        var image = random.image_url.replace("ms.jpg", "l.jpg"); //changes yelp img to large
+        }
+      else{
+        var image = "images/no-image.jpg";
+        }
+      //populate data in HTML
+      $('.name').html(random.name);
+      $('#pic').attr('src', image);
+      $('#rating').attr('src', random.rating_img_url_large);
+      $('#votes').html(random.review_count)
+      $('#street').html(random.location.display_address[0]);
+      $('#city').html(random.location.display_address[1]);
+      $('#phone').html(random.display_phone);
+      
+  }
+
+  
 
   $('#main-form').on('click','#submit', function(event){
-  event.preventDefault();
-  $('#suggestion').fadeOut();
-  randomPick();
-  $('#suggestion').delay(800).slideDown();
+    event.preventDefault();
+    $('#form').hide('slide')
+    $('#suggestion').fadeOut();
+    getResults();
+    $('#suggestion').delay(1500).show('drop', 'easeInBounce');
   });
 
+  $('#buttons').on('click', '#next', function(){
+    $('#suggestion').fadeOut();
+    setTimeout(function(){randomPick()}, 800);
+    $('#suggestion').delay(800).show('drop', 'swing', 'down');
+  });
+
+  $('#buttons').on('click', '#reset', function(){
+    $('#suggestion').fadeOut();
+    $('#form').show('slide');
+  })
 });﻿ //doc ready
