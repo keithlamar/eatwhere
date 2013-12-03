@@ -1,3 +1,9 @@
 .jumbotron{
 	text-align: center;
 }
+#zipCode{
+	width: 105px;
+}
+#milesAway{
+	width: 170px;
+}
